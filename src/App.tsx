@@ -124,6 +124,7 @@ function App() {
 						Xác nhận
 					</a>
 				</Button>
+				<a href='https://dl.vietqr.io/pay?app=tpb'>bam vo</a>
 			</Form>
 		</Flex>
 	)

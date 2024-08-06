@@ -4,7 +4,7 @@ const ThemeProvider = ({ children }: React.PropsWithChildren) => (
 	<ConfigProvider
 		theme={{
 			token: {
-				// fontSize: 20
+				fontSize: 16
 			},
 			components: {
 				// Input: {
