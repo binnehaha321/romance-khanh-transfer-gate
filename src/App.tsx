@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button, Flex, Form, FormProps, Input, Select } from 'antd'
 import { DefaultOptionType } from 'antd/es/select'
 
@@ -7,13 +7,16 @@ import { capitalizeText, getFeeBySubject, subjectOptions } from './lib/utils'
 import { ACCOUNT_NAME, ACCOUNT_NUMBER, BANK_ID, TEMPLATE } from './constants'
 
 function App() {
-	const [formTransfer] = Form.useForm()
 	const [feeByDuration, setFeeByDuration] = useState<DefaultOptionType[]>([])
 	const [desc, setDesc] = useState('')
 	const [schemeUrl, setSchemeUrl] = useState('')
+	const [formTransfer] = Form.useForm<IDataValues>()
+	const studentName = Form.useWatch('studentName', formTransfer)
+	const subject = Form.useWatch('subject', formTransfer)
+	const amount = Form.useWatch('amount', formTransfer)
 
-	const handleSubmit: FormProps<IDataValues>['onFinish'] = async (values) => {
-		await generateSchemeUrl(values)
+	const handleSubmit: FormProps<IDataValues>['onFinish'] = (values) => {
+		generateSchemeUrl(values)
 	}
 
 	const handleSubmitFailed: FormProps<IDataValues>['onFinishFailed'] = (
@@ -31,29 +34,39 @@ function App() {
 		}
 	}
 
-	const handleStudentNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const capitalizedValue = capitalizeText(e.currentTarget.value)
-		formTransfer.setFieldsValue({ studentName: capitalizedValue })
-	}
+	const handleStudentNameChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const capitalizedValue = capitalizeText(e.currentTarget.value)
+			formTransfer.setFieldsValue({ studentName: capitalizedValue })
+		},
+		[formTransfer]
+	)
 
-	const handleFormBlur = async () => {
-		const dataValues = formTransfer.getFieldsValue() as IDataValues
-		await generateSchemeUrl(dataValues)
-	}
+	const generateSchemeUrl = useCallback(
+		(values: IDataValues) => {
+			if (values?.studentName && values?.subject && values?.amount) {
+				const { studentName, subject, amount } = values
 
-	const generateSchemeUrl = useCallback(async (values: IDataValues) => {
-		if (values?.studentName && values?.subject && values?.amount) {
-			const { studentName, subject, amount } = values
+				const description = desc
+					? desc
+					: `${studentName} dong hoc phi ${subject}`
 
-			const description = `${studentName} dong hoc phi ${subject}`
+				const encodedDescription = encodeURIComponent(description)
+				const bankSchemeUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NUMBER}-${TEMPLATE}.png?amount=${amount}&addInfo=${encodedDescription}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`
 
-			const encodedDescription = encodeURIComponent(description)
-			const bankSchemeUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NUMBER}-${TEMPLATE}.png?amount=${amount}&addInfo=${encodedDescription}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`
+				setDesc(description)
+				setSchemeUrl(bankSchemeUrl)
+			}
+		},
+		[desc]
+	)
 
-			setDesc(description)
-			setSchemeUrl(bankSchemeUrl)
+	useEffect(() => {
+		if (studentName && subject && amount) {
+			const val = { studentName, subject, amount }
+			generateSchemeUrl(val)
 		}
-	}, [])
+	}, [studentName, subject, amount, generateSchemeUrl])
 
 	return (
 		<Flex
@@ -70,7 +83,6 @@ function App() {
 				autoComplete='off'
 				form={formTransfer}
 				className='w-full'
-				onBlur={handleFormBlur}
 			>
 				<Form.Item
 					label='Tên học viên (KHÔNG DẤU)'
@@ -107,19 +119,22 @@ function App() {
 				</Form.Item>
 				<Form.Item label='Nội dung chuyển khoản'>
 					<Input
-						readOnly
+						// readOnly
 						placeholder='Nội dung chuyển khoản...'
 						value={desc}
+						onChange={(e) => setDesc(e.target.value)}
 					/>
 				</Form.Item>
 				<Button
 					type='primary'
 					htmlType='submit'
 					className='w-full'
+					disabled={!schemeUrl}
 				>
 					<a
 						href={schemeUrl}
 						target='_blank'
+						className='block w-full h-full text-center'
 					>
 						Xác nhận
 					</a>
