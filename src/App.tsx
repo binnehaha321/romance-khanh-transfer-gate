@@ -12,8 +12,8 @@ function App() {
 	const [desc, setDesc] = useState('')
 	const [schemeUrl, setSchemeUrl] = useState('')
 
-	const handleSubmit: FormProps<IDataValues>['onFinish'] = (values) => {
-		generateSchemeUrl(values)
+	const handleSubmit: FormProps<IDataValues>['onFinish'] = async (values) => {
+		await generateSchemeUrl(values)
 	}
 
 	const handleSubmitFailed: FormProps<IDataValues>['onFinishFailed'] = (
@@ -36,12 +36,12 @@ function App() {
 		formTransfer.setFieldsValue({ studentName: capitalizedValue })
 	}
 
-	const handleFormBlur = () => {
+	const handleFormBlur = async () => {
 		const dataValues = formTransfer.getFieldsValue() as IDataValues
-		generateSchemeUrl(dataValues)
+		await generateSchemeUrl(dataValues)
 	}
 
-	const generateSchemeUrl = useCallback((values: IDataValues) => {
+	const generateSchemeUrl = useCallback(async (values: IDataValues) => {
 		if (values?.studentName && values?.subject && values?.amount) {
 			const { studentName, subject, amount } = values
 
