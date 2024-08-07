@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Button, Flex, Form, FormProps, Input, Select } from 'antd'
 import { DefaultOptionType } from 'antd/es/select'
+import QrScanner from 'qr-scanner'
 
 import { IDataValues } from './types'
 import { capitalizeText, getFeeBySubject, subjectOptions } from './lib/utils'
@@ -12,8 +13,8 @@ function App() {
 	const [desc, setDesc] = useState('')
 	const [schemeUrl, setSchemeUrl] = useState('')
 
-	const handleSubmit: FormProps<IDataValues>['onFinish'] = (values) => {
-		generateSchemeUrl(values)
+	const handleSubmit: FormProps<IDataValues>['onFinish'] = async (values) => {
+		await generateSchemeUrl(values)
 	}
 
 	const handleSubmitFailed: FormProps<IDataValues>['onFinishFailed'] = (
@@ -36,12 +37,12 @@ function App() {
 		formTransfer.setFieldsValue({ studentName: capitalizedValue })
 	}
 
-	const handleFormBlur = () => {
+	const handleFormBlur = async () => {
 		const dataValues = formTransfer.getFieldsValue() as IDataValues
-		generateSchemeUrl(dataValues)
+		await generateSchemeUrl(dataValues)
 	}
 
-	const generateSchemeUrl = useCallback((values: IDataValues) => {
+	const generateSchemeUrl = useCallback(async (values: IDataValues) => {
 		if (values?.studentName && values?.subject && values?.amount) {
 			const { studentName, subject, amount } = values
 
@@ -52,6 +53,16 @@ function App() {
 
 			setDesc(description)
 			setSchemeUrl(bankSchemeUrl)
+
+			const imageFile = await fetch(
+				`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${bankSchemeUrl}`
+			).then((resp) => resp.blob())
+
+			const result = await QrScanner.scanImage(imageFile, {
+				returnDetailedScanResult: true
+			})
+			console.log(result.data)
+			window.location.href = result.data
 		}
 	}, [])
 
@@ -124,7 +135,7 @@ function App() {
 						Xác nhận
 					</a>
 				</Button>
-				<a href='https://dl.vietqr.io/pay?app=tpb'>bam vo</a>
+				{/* <a href='https://dl.vietqr.io/pay?app=tpb'>bam vo</a> */}
 			</Form>
 		</Flex>
 	)
