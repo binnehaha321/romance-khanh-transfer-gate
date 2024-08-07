@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 import { Button, Flex, Form, FormProps, Input, Select } from 'antd'
 import { DefaultOptionType } from 'antd/es/select'
-import QrScanner from 'qr-scanner'
 
 import { IDataValues } from './types'
 import { capitalizeText, getFeeBySubject, subjectOptions } from './lib/utils'
@@ -53,16 +52,6 @@ function App() {
 
 			setDesc(description)
 			setSchemeUrl(bankSchemeUrl)
-
-			const imageFile = await fetch(
-				`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${bankSchemeUrl}`
-			).then((resp) => resp.blob())
-
-			const result = await QrScanner.scanImage(imageFile, {
-				returnDetailedScanResult: true
-			})
-			console.log(result.data)
-			window.location.href = result.data
 		}
 	}, [])
 
@@ -135,7 +124,6 @@ function App() {
 						Xác nhận
 					</a>
 				</Button>
-				{/* <a href='https://dl.vietqr.io/pay?app=tpb'>bam vo</a> */}
 			</Form>
 		</Flex>
 	)
