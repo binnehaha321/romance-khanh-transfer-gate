@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, Flex, Form, FormProps, Input, Select } from 'antd'
 import { DefaultOptionType } from 'antd/es/select'
 
@@ -14,6 +14,10 @@ function App() {
 	const studentName = Form.useWatch('studentName', formTransfer)
 	const subject = Form.useWatch('subject', formTransfer)
 	const amount = Form.useWatch('amount', formTransfer)
+	const enoughData = useMemo(
+		() => !!(studentName && subject && amount),
+		[studentName, subject, amount]
+	)
 
 	const handleSubmit: FormProps<IDataValues>['onFinish'] = (values) => {
 		generateSchemeUrl(values)
@@ -47,9 +51,7 @@ function App() {
 			if (values?.studentName && values?.subject && values?.amount) {
 				const { studentName, subject, amount } = values
 
-				const description = desc
-					? desc
-					: `${studentName} dong hoc phi ${subject}`
+				const description = desc || `${studentName} dong hoc phi ${subject}`
 
 				const encodedDescription = encodeURIComponent(description)
 				const bankSchemeUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NUMBER}-${TEMPLATE}.png?amount=${amount}&addInfo=${encodedDescription}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`
@@ -119,7 +121,7 @@ function App() {
 				</Form.Item>
 				<Form.Item label='Nội dung chuyển khoản'>
 					<Input
-						// readOnly
+						readOnly={!enoughData}
 						placeholder='Nội dung chuyển khoản...'
 						value={desc}
 						onChange={(e) => setDesc(e.target.value)}
