@@ -7,9 +7,9 @@ const ThemeProvider = ({ children }: React.PropsWithChildren) => (
 				fontSize: 16
 			},
 			components: {
-				// Input: {
-				// 	fontSize: 20
-				// },
+				Input: {
+					paddingBlock: 6
+				}
 			}
 		}}
 	>

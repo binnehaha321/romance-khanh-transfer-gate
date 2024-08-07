@@ -5,6 +5,7 @@ import { DefaultOptionType } from 'antd/es/select'
 import { IDataValues } from './types'
 import { capitalizeText, getFeeBySubject, subjectOptions } from './lib/utils'
 import { ACCOUNT_NAME, ACCOUNT_NUMBER, BANK_ID, TEMPLATE } from './constants'
+import Header from './components/Header'
 
 function App() {
 	const [feeByDuration, setFeeByDuration] = useState<DefaultOptionType[]>([])
@@ -77,6 +78,7 @@ function App() {
 			align='center'
 			className='w-[300px] h-screen mx-auto'
 		>
+			<Header />
 			<Form
 				onFinish={handleSubmit}
 				onFinishFailed={handleSubmitFailed}
